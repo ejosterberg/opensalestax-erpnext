@@ -95,6 +95,30 @@ def is_safe_url(url: str, allow_private: bool = False) -> bool:
 	return True
 
 
+def _classify_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address, allow_private: bool) -> str:
+	"""Return a non-empty reason string if `ip` is unsafe, else ''."""
+	if ip.is_loopback:
+		return f"resolved to loopback address {ip}"
+	if ip.is_link_local:
+		return f"resolved to link-local address {ip}"
+	if ip.is_multicast:
+		return f"resolved to multicast address {ip}"
+	if ip.is_reserved:
+		return f"resolved to reserved address {ip}"
+	if ip.is_unspecified:
+		return f"resolved to unspecified address {ip}"
+	if allow_private:
+		return ""
+	if ip.is_private:
+		return (
+			f"resolved to private/RFC-1918 address {ip} — tick "
+			"'Allow Private Networks' in Settings if this is intentional"
+		)
+	if isinstance(ip, ipaddress.IPv4Address) and ip in _CGNAT_NET:
+		return f"resolved to CGNAT address {ip}"
+	return ""
+
+
 def reason_unsafe(url: str, allow_private: bool = False) -> str:
 	"""Return a short human-readable reason a URL fails validation.
 
@@ -103,52 +127,28 @@ def reason_unsafe(url: str, allow_private: bool = False) -> str:
 	"""
 	if not url or not isinstance(url, str):
 		return "URL is empty"
-
 	try:
 		parsed = urlparse(url.strip())
 	except ValueError:
 		return "URL is malformed"
-
 	if parsed.scheme not in ("http", "https"):
 		return f"unsupported scheme {parsed.scheme!r} — only http/https allowed"
-
 	host = parsed.hostname
 	if not host:
 		return "URL has no host component"
 	host = host.strip("[]")
-
 	try:
 		addr_info = socket.getaddrinfo(host, None)
 	except (OSError, UnicodeError):
 		return f"host {host!r} did not resolve"
-
 	if not addr_info:
 		return f"host {host!r} returned no addresses"
-
 	for entry in addr_info:
-		sockaddr = entry[4]
-		ip_str = sockaddr[0]
 		try:
-			ip = ipaddress.ip_address(ip_str)
+			ip = ipaddress.ip_address(entry[4][0])
 		except ValueError:
 			continue
-		if ip.is_loopback:
-			return f"resolved to loopback address {ip}"
-		if ip.is_link_local:
-			return f"resolved to link-local address {ip}"
-		if ip.is_multicast:
-			return f"resolved to multicast address {ip}"
-		if ip.is_reserved:
-			return f"resolved to reserved address {ip}"
-		if ip.is_unspecified:
-			return f"resolved to unspecified address {ip}"
-		if not allow_private:
-			if ip.is_private:
-				return (
-					f"resolved to private/RFC-1918 address {ip} — tick "
-					"'Allow Private Networks' in Settings if this is intentional"
-				)
-			if isinstance(ip, ipaddress.IPv4Address) and ip in _CGNAT_NET:
-				return f"resolved to CGNAT address {ip}"
-
+		reason = _classify_ip(ip, allow_private)
+		if reason:
+			return reason
 	return ""

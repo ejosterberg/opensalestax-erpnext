@@ -7,7 +7,18 @@ import frappe
 
 
 def run() -> None:
+	"""Run ERPNext's setup_complete wizard with minimal test args.
+
+	The admin password is read from the OSTAX_TEST_ADMIN_PASSWORD env var
+	(no hardcoded credential — keeps SonarQube + secret scanners happy).
+	"""
+	import os
+
 	from erpnext.setup.setup_wizard.setup_wizard import setup_complete
+
+	admin_password = os.environ.get("OSTAX_TEST_ADMIN_PASSWORD", "")
+	if not admin_password:
+		raise RuntimeError("OSTAX_TEST_ADMIN_PASSWORD env var must be set before running setup_site.run()")
 
 	args = frappe._dict(
 		{
@@ -24,7 +35,7 @@ def run() -> None:
 			"setup_demo": 0,
 			"full_name": "Administrator",
 			"email": "admin@example.com",
-			"password": "admin",
+			"password": admin_password,
 		}
 	)
 	setup_complete(args)
