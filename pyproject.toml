@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: Apache-2.0
+# pyproject.toml — opensalestax_erpnext
+
+# This Frappe app is installed via `bench get-app`, not pip — so setup.py is
+# the canonical build descriptor. pyproject.toml exists only to configure
+# the dev tooling (ruff, black, mypy, pytest).
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+# v15 supports 3.10–3.14; v16 is 3.14-only. We target 3.10 syntax to support both.
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade (will be limited by py310 target)
+    "S",    # bandit (security)
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",  # line-too-long — handled by formatter
+    "S101",  # use of assert — pytest needs this
+    "S603",  # subprocess call — Frappe internals may use this legitimately
+    "W191",  # tabs in indentation — we use tabs per Frappe convention
+    "E101",  # mixed tabs/spaces — false positive when using tabs
+    "D",     # docstring style — Frappe code is loose on this
+]
+per-file-ignores = { "**/tests/**" = ["S101", "S105", "S106"] }
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+
+[tool.black]
+line-length = 110
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+ignore_missing_imports = true   # frappe/erpnext have no stubs
+
+[[tool.mypy.overrides]]
+module = "frappe.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "erpnext.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["opensalestax_erpnext/tests", "opensalestax_erpnext/opensalestax_erpnext/doctype"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"

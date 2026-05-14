@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local scratch / secrets
+.env
+.env.local
+*.pem
+TODO.local.md
+NOTES.local.md
+scratch/
+
+# Claude Code session config
+.claude/
+
+# Frappe bench artifacts (in case dev work happens inside a bench)
+sites/
+logs/
+config/
+node_modules/

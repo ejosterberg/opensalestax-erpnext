@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [version-15, version-16]
+  pull_request:
+    branches: [version-15, version-16]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint + format + types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dev deps
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Ruff check
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: mypy
+        run: mypy opensalestax_erpnext/ --ignore-missing-imports
+        continue-on-error: true  # Frappe has no stubs; warnings are informational
+
+  unit:
+    name: Unit tests (no Frappe bench)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dev deps
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: pytest
+        run: pytest opensalestax_erpnext/tests/test_url_validator.py opensalestax_erpnext/tests/test_cache.py -v
+
+  dco:
+    name: DCO sign-off
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify every commit is signed off
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          missing=$(git log --format='%H %s%n%b' "$base..$head" \
+            | awk 'BEGIN{RS=""} !/Signed-off-by:/ {print}')
+          if [ -n "$missing" ]; then
+            echo "Commits missing DCO sign-off:"; echo "$missing"; exit 1
+          fi
+          echo "All commits signed off."

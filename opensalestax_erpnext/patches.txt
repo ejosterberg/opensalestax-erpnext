@@ -1,0 +1,2 @@
+# Patch list — empty for v0.1 (no DB migrations yet).
+# Format: <app>.<module-path>

@@ -1,0 +1,119 @@
+name: Test v16 (Frappe + ERPNext)
+
+on:
+  push:
+    branches: [version-16]
+  pull_request:
+    branches: [version-16]
+  workflow_dispatch:
+
+concurrency:
+  group: test-v16-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mariadb-admin ping -uroot -proot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+      redis-cache:
+        image: redis:7-alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:7-alpine
+        ports:
+          - 11000:6379
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: opensalestax-erpnext
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential wkhtmltopdf libffi-dev libssl-dev \
+            libmariadb-dev mariadb-client libcups2-dev pkg-config
+
+      - name: Install bench
+        run: pip install frappe-bench
+
+      - name: Bench init (Frappe v16)
+        run: |
+          bench init bench-test --frappe-branch version-16 --skip-redis-config-generation --skip-assets --python "$(which python)"
+
+      - name: Configure bench redis/db
+        working-directory: bench-test
+        run: |
+          bench set-config -g db_host 127.0.0.1
+          bench set-config -g db_port 3306
+          bench set-config -g redis_cache 'redis://127.0.0.1:13000'
+          bench set-config -g redis_queue 'redis://127.0.0.1:11000'
+          bench set-config -g redis_socketio 'redis://127.0.0.1:11000'
+
+      - name: Get ERPNext v16
+        working-directory: bench-test
+        run: bench get-app erpnext --branch version-16
+
+      - name: Get our app
+        working-directory: bench-test
+        run: bench get-app "$GITHUB_WORKSPACE/opensalestax-erpnext" --branch version-16 || bench get-app "$GITHUB_WORKSPACE/opensalestax-erpnext"
+
+      - name: Create site + install apps
+        working-directory: bench-test
+        run: |
+          bench new-site test.localhost \
+            --mariadb-root-password root \
+            --admin-password admin \
+            --no-mariadb-socket
+          bench --site test.localhost install-app erpnext
+          bench --site test.localhost install-app opensalestax_erpnext
+
+      - name: Run tests
+        working-directory: bench-test
+        env:
+          CI: "true"
+        run: bench --site test.localhost run-tests --app opensalestax_erpnext
+
+  dco:
+    name: DCO sign-off
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          missing=$(git log --format='%H %s%n%b' "$base..$head" \
+            | awk 'BEGIN{RS=""} !/Signed-off-by:/ {print}')
+          if [ -n "$missing" ]; then
+            echo "Commits missing DCO sign-off:"; echo "$missing"; exit 1
+          fi
+          echo "All commits signed off."

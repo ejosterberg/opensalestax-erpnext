@@ -1,0 +1,10 @@
+# Development dependencies — NOT installed by bench get-app.
+# Use `pip install -r requirements-dev.txt` in your dev venv.
+
+-r requirements.txt
+
+pytest>=7.0
+pytest-mock>=3.10
+ruff>=0.4
+black>=24.0
+mypy>=1.8

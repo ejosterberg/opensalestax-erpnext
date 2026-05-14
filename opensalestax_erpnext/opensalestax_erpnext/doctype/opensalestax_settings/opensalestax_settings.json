@@ -1,0 +1,162 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-05-13 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "System",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "section_break_connection",
+  "base_url",
+  "api_key",
+  "column_break_connection",
+  "verify_ssl",
+  "section_break_behavior",
+  "cache_ttl_seconds",
+  "fail_soft",
+  "column_break_behavior",
+  "tax_account_head",
+  "shipping_account_head",
+  "section_break_advanced",
+  "treat_item_tax_template_as_override",
+  "allow_private_networks",
+  "section_break_disclaimer",
+  "calculation_only_disclaimer"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "description": "Master kill-switch. When unchecked the validate hook no-ops and ERPNext's standard tax template applies.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable OpenSalesTax"
+  },
+  {
+   "fieldname": "section_break_connection",
+   "fieldtype": "Section Break",
+   "label": "Engine Connection"
+  },
+  {
+   "description": "URL of the OpenSalesTax engine, e.g. https://tax.example.com",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Engine Base URL"
+  },
+  {
+   "description": "Optional Bearer token if your engine requires authentication. Leave blank for anonymous access.",
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key (Optional)"
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Uncheck only for self-signed development instances. Always ON in production.",
+   "fieldname": "verify_ssl",
+   "fieldtype": "Check",
+   "label": "Verify SSL Certificate"
+  },
+  {
+   "fieldname": "section_break_behavior",
+   "fieldtype": "Section Break",
+   "label": "Behavior"
+  },
+  {
+   "default": "86400",
+   "description": "How long to cache tax rate lookups per ZIP. 86400 seconds = 24 hours.",
+   "fieldname": "cache_ttl_seconds",
+   "fieldtype": "Int",
+   "label": "Cache TTL (seconds)"
+  },
+  {
+   "default": "1",
+   "description": "When the engine is unreachable, silently fall back to the user's tax template (recommended). Uncheck to block invoice save on engine errors.",
+   "fieldname": "fail_soft",
+   "fieldtype": "Check",
+   "label": "Fail Soft on Engine Error"
+  },
+  {
+   "fieldname": "column_break_behavior",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "GL account that tax lines post to. Typically a liability account such as 'Sales Tax Payable'.",
+   "fieldname": "tax_account_head",
+   "fieldtype": "Link",
+   "label": "Tax Account Head",
+   "options": "Account"
+  },
+  {
+   "description": "Optional. If set, shipping-related tax is tracked separately.",
+   "fieldname": "shipping_account_head",
+   "fieldtype": "Link",
+   "label": "Shipping Income Account",
+   "options": "Account"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_advanced",
+   "fieldtype": "Section Break",
+   "label": "Advanced"
+  },
+  {
+   "default": "1",
+   "description": "When an item has an Item Tax Template set, skip the OpenSalesTax computation for that item (the merchant has marked it as having override rates).",
+   "fieldname": "treat_item_tax_template_as_override",
+   "fieldtype": "Check",
+   "label": "Respect Item Tax Templates as Overrides"
+  },
+  {
+   "default": "0",
+   "description": "Allow connecting to an OpenSalesTax engine on a private/RFC-1918 IP (e.g. 10.x, 192.168.x). Required only for LAN deployments. Default OFF for SSRF defense.",
+   "fieldname": "allow_private_networks",
+   "fieldtype": "Check",
+   "label": "Allow Private Networks"
+  },
+  {
+   "fieldname": "section_break_disclaimer",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "calculation_only_disclaimer",
+   "fieldtype": "HTML",
+   "label": "Calculation-Only Disclaimer",
+   "options": "<div class=\"text-muted\" style=\"padding:10px;border-left:3px solid #1F8B4C;\"><strong>Calculation only.</strong> Tax calculations are provided as-is for convenience. The merchant is solely responsible for tax-collection accuracy and remittance to the appropriate jurisdictions. Verify against your state Department of Revenue before remitting.</div>"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-05-13 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Opensalestax Erpnext",
+ "name": "OpenSalesTax Settings",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
