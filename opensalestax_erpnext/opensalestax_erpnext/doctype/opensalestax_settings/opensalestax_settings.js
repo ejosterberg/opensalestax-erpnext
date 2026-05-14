@@ -6,7 +6,8 @@ frappe.ui.form.on("OpenSalesTax Settings", {
 			frappe.call({
 				method: "opensalestax_erpnext.opensalestax_erpnext.doctype.opensalestax_settings.opensalestax_settings.test_connection",
 				callback(r) {
-					if (!r || !r.message) {
+					const m = r?.message;
+					if (!m) {
 						frappe.msgprint({
 							title: __("Connection Test"),
 							message: __("No response from server."),
@@ -14,7 +15,6 @@ frappe.ui.form.on("OpenSalesTax Settings", {
 						});
 						return;
 					}
-					const m = r.message;
 					if (m.status === "ok") {
 						frappe.msgprint({
 							title: __("Connection OK"),

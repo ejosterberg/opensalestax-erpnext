@@ -32,12 +32,15 @@ from .exceptions import OstaxConfigError, OstaxError
 # ---------------------------------------------------------------------------
 
 
-def apply_opensalestax(doc: Any, method: str | None = None) -> None:
+def apply_opensalestax(doc: Any, _method: str | None = None) -> None:
 	"""Replace `doc.taxes` with OpenSalesTax-computed per-jurisdiction lines.
 
 	Registered for `validate` events on Sales Invoice, Sales Order, and
 	Quotation. When the gate checks fail, this is a silent no-op — the
 	user's existing tax template applies normally.
+
+	The `_method` argument is positional-required by Frappe's hook
+	dispatcher but unused — we already know the event from the registration.
 	"""
 	try:
 		settings = _settings()
@@ -204,29 +207,43 @@ def _call_engine(client: Any, zip5: str, taxable_total: float) -> Any:
 	Kept tiny so tests can monkeypatch this function instead of mocking
 	the entire SDK client.
 	"""
-	# The SDK accepts a typed payload; for v0.1 we pass a single line item
-	# representing the taxable subtotal. Per-line breakdown is deferred to v0.2
-	# when we plumb item-level categories.
-	return client.calculate(
-		ship_to={"zip5": zip5, "country": "US"},
-		line_items=[{"amount": str(Decimal(str(taxable_total)).quantize(Decimal("0.01"))), "quantity": 1}],
-	)
+	from opensalestax import Address, LineItem
+
+	address = Address(zip5=zip5)
+	line_items = [
+		LineItem(
+			amount=Decimal(str(taxable_total)).quantize(Decimal("0.01")),
+			category="general",
+		)
+	]
+	return client.calculate(address, line_items)
 
 
 def _normalize_response(raw: Any) -> dict[str, Any]:
 	"""Reshape the SDK response into the cache-friendly schema.
 
-	The SDK exposes per-jurisdiction breakdown; we collapse it into a list
-	of `{name, rate_pct, kind}` rows. Resilient to slight schema drift —
-	missing fields default to empty/zero.
+	The engine returns per-line breakdowns, each carrying a list of
+	jurisdictions. For v0.1 we send a single aggregate LineItem, so the
+	response has exactly one line — we extract its jurisdictions.
+	Resilient to slight schema drift — missing fields default to empty/zero.
 	"""
-	jurisdictions = []
-	for j in _safe_iter(getattr(raw, "jurisdictions", None) or _dig(raw, "jurisdictions") or []):
+	jurisdictions: list[dict[str, str]] = []
+
+	# Canonical path: result.lines[0].jurisdictions (CalculationResult shape)
+	lines = _dig(raw, "lines") or []
+	first_line = lines[0] if lines else None
+	juris_source = _dig(first_line, "jurisdictions") if first_line else None
+
+	# Fall back to a top-level "jurisdictions" attribute for older shapes/tests
+	if not juris_source:
+		juris_source = _dig(raw, "jurisdictions")
+
+	for j in _safe_iter(juris_source or []):
 		name = _dig(j, "name") or _dig(j, "label") or "Tax"
 		rate = _dig(j, "rate_pct")
 		if rate is None:
 			rate = _dig(j, "rate") or 0
-		kind = _dig(j, "kind") or _dig(j, "type") or ""
+		kind = _dig(j, "type") or _dig(j, "kind") or ""
 		try:
 			rate_pct = Decimal(str(rate))
 		except Exception:

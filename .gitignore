@@ -43,3 +43,4 @@ sites/
 logs/
 config/
 node_modules/
+.scannerwork/

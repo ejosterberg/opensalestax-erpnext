@@ -25,6 +25,51 @@ from urllib.parse import urlparse
 _CGNAT_NET = ipaddress.ip_network("100.64.0.0/10")
 
 
+def _parse_host(url: str) -> str | None:
+	"""Return the hostname component of `url`, or None if unparseable."""
+	if not url or not isinstance(url, str):
+		return None
+	try:
+		parsed = urlparse(url.strip())
+	except ValueError:
+		return None
+	if parsed.scheme not in ("http", "https"):
+		return None
+	host = parsed.hostname
+	if not host:
+		return None
+	# Strip brackets from IPv6 literals — urlparse leaves them off but be defensive
+	return host.strip("[]")
+
+
+def _resolve_addresses(host: str) -> list[ipaddress.IPv4Address | ipaddress.IPv6Address]:
+	"""Resolve `host` to a list of IP addresses. Empty list on failure."""
+	try:
+		addr_info = socket.getaddrinfo(host, None)
+	except (OSError, UnicodeError):
+		return []
+	resolved: list[ipaddress.IPv4Address | ipaddress.IPv6Address] = []
+	for entry in addr_info:
+		sockaddr = entry[4]
+		try:
+			resolved.append(ipaddress.ip_address(sockaddr[0]))
+		except ValueError:
+			continue
+	return resolved
+
+
+def _is_always_unsafe(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+	"""Return True if the IP is unsafe regardless of allow_private flag."""
+	return bool(ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved or ip.is_unspecified)
+
+
+def _is_private_or_cgnat(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+	"""Return True if the IP is RFC-1918 private or in the CGNAT range."""
+	if ip.is_private:
+		return True
+	return isinstance(ip, ipaddress.IPv4Address) and ip in _CGNAT_NET
+
+
 def is_safe_url(url: str, allow_private: bool = False) -> bool:
 	"""Return True if `url` is safe to dispatch HTTP requests to.
 
@@ -36,51 +81,17 @@ def is_safe_url(url: str, allow_private: bool = False) -> bool:
 		True if every resolved address for the URL's host is safe; False otherwise.
 		Malformed URLs and DNS-resolution failures return False.
 	"""
-	if not url or not isinstance(url, str):
+	host = _parse_host(url)
+	if host is None:
 		return False
-
-	try:
-		parsed = urlparse(url.strip())
-	except ValueError:
+	resolved = _resolve_addresses(host)
+	if not resolved:
 		return False
-
-	if parsed.scheme not in ("http", "https"):
-		return False
-
-	host = parsed.hostname
-	if not host:
-		return False
-
-	# Strip brackets from IPv6 literals — urlparse leaves them off but be defensive
-	host = host.strip("[]")
-
-	# Resolve all addresses (IPv4 + IPv6). If any is unsafe, reject.
-	try:
-		addr_info = socket.getaddrinfo(host, None)
-	except (OSError, UnicodeError):
-		return False
-
-	if not addr_info:
-		return False
-
-	for entry in addr_info:
-		sockaddr = entry[4]
-		ip_str = sockaddr[0]
-		try:
-			ip = ipaddress.ip_address(ip_str)
-		except ValueError:
-			continue
-
-		if ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved:
+	for ip in resolved:
+		if _is_always_unsafe(ip):
 			return False
-		if ip.is_unspecified:
+		if not allow_private and _is_private_or_cgnat(ip):
 			return False
-		if not allow_private:
-			if ip.is_private:
-				return False
-			if isinstance(ip, ipaddress.IPv4Address) and ip in _CGNAT_NET:
-				return False
-
 	return True
 
 

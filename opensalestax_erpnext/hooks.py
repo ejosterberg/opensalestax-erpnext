@@ -18,17 +18,19 @@ required_apps = ["erpnext"]
 # Document events
 # - validate: replaces tax template with OpenSalesTax computation
 # - on_submit / on_cancel: audit-log slots (no-op in v0.1; reserved for v0.2)
+_APPLY_HANDLER = "opensalestax_erpnext.tax.apply_opensalestax"
+
 doc_events = {
 	"Sales Invoice": {
-		"validate": "opensalestax_erpnext.tax.apply_opensalestax",
+		"validate": _APPLY_HANDLER,
 		"on_submit": "opensalestax_erpnext.audit.record_submission",
 		"on_cancel": "opensalestax_erpnext.audit.record_cancellation",
 	},
 	"Sales Order": {
-		"validate": "opensalestax_erpnext.tax.apply_opensalestax",
+		"validate": _APPLY_HANDLER,
 	},
 	"Quotation": {
-		"validate": "opensalestax_erpnext.tax.apply_opensalestax",
+		"validate": _APPLY_HANDLER,
 	},
 }
 

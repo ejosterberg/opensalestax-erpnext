@@ -33,7 +33,8 @@ def get(zip5: str) -> dict[str, Any] | None:
 		return raw
 	try:
 		return json.loads(raw)
-	except (TypeError, ValueError, json.JSONDecodeError):
+	except (TypeError, ValueError):
+		# JSONDecodeError is a ValueError subclass — caught above.
 		return None
 
 
