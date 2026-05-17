@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """OpenSalesTax Settings Single doctype controller."""
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ class OpenSalesTaxSettings(Document):
 	def validate(self) -> None:
 		"""Reject save when configuration is inconsistent.
 
-		Only enforces URL validation when the app is being enabled — that
+		Only enforces URL validation when the app is being enabled â€” that
 		way an admin can save a draft URL while it's still wrong without
 		being blocked.
 		"""

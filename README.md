@@ -137,7 +137,7 @@ Contributions welcome. Every commit must be DCO-signed off (`git commit -s`). Se
 
 ## License
 
-Apache 2.0 — see [`LICENSE`](LICENSE).
+Dual-licensed under your choice of [Apache-2.0](LICENSE-APACHE.txt) OR [GPL-2.0-or-later](LICENSE-GPL.txt). See [`LICENSE`](LICENSE).
 
 ## Related
 

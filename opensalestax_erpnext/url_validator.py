@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: Apache-2.0
-"""SSRF defense — validate engine base_url before dispatching requests.
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+"""SSRF defense â€” validate engine base_url before dispatching requests.
 
 When a merchant types a URL into OpenSalesTax Settings, this module
 decides whether it's safe to send HTTP traffic to. By default it
@@ -12,7 +12,7 @@ rejects:
 - CGNAT (100.64.0.0/10)
 
 The RFC-1918 + CGNAT block can be overridden with `allow_private=True`
-for legitimate LAN-hosted OpenSalesTax deployments — the merchant must
+for legitimate LAN-hosted OpenSalesTax deployments â€” the merchant must
 opt in via the **Allow Private Networks** toggle in Settings.
 """
 
@@ -38,7 +38,7 @@ def _parse_host(url: str) -> str | None:
 	host = parsed.hostname
 	if not host:
 		return None
-	# Strip brackets from IPv6 literals — urlparse leaves them off but be defensive
+	# Strip brackets from IPv6 literals â€” urlparse leaves them off but be defensive
 	return host.strip("[]")
 
 
@@ -111,7 +111,7 @@ def _classify_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address, allow_privat
 		return ""
 	if ip.is_private:
 		return (
-			f"resolved to private/RFC-1918 address {ip} — tick "
+			f"resolved to private/RFC-1918 address {ip} â€” tick "
 			"'Allow Private Networks' in Settings if this is intentional"
 		)
 	if isinstance(ip, ipaddress.IPv4Address) and ip in _CGNAT_NET:
@@ -132,7 +132,7 @@ def reason_unsafe(url: str, allow_private: bool = False) -> str:
 	except ValueError:
 		return "URL is malformed"
 	if parsed.scheme not in ("http", "https"):
-		return f"unsupported scheme {parsed.scheme!r} — only http/https allowed"
+		return f"unsupported scheme {parsed.scheme!r} â€” only http/https allowed"
 	host = parsed.hostname
 	if not host:
 		return "URL has no host component"

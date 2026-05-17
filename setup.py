@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """Setup script for the opensalestax_erpnext Frappe app.
 
 Installed via `bench get-app https://github.com/ejosterberg/opensalestax-erpnext`
@@ -22,13 +22,14 @@ setup(
 	author="Eric Osterberg",
 	author_email="ejosterberg@gmail.com",
 	url="https://github.com/ejosterberg/opensalestax-erpnext",
-	license="Apache-2.0",
+	license="Apache-2.0 OR GPL-2.0-or-later",
 	packages=find_packages(),
 	zip_safe=False,
 	include_package_data=True,
 	install_requires=install_requires,
 	classifiers=[
 		"License :: OSI Approved :: Apache Software License",
+		"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 		"Programming Language :: Python :: 3",
 		"Programming Language :: Python :: 3.10",
 		"Programming Language :: Python :: 3.14",

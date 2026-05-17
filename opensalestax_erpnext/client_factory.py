@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """Build an opensalestax.Client from OpenSalesTax Settings.
 
 Single chokepoint for engine HTTP calls. Pulls config from the Settings

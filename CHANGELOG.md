@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-17
+
+### Changed
+
+- **Dual-licensed Apache-2.0 OR GPL-2.0-or-later.** Adds GPL-2.0-or-later
+  as an alternative license alongside the existing Apache-2.0 grant.
+  ERPNext core (Frappe + ERPNext) is GPL-3.0+, so GPL-2.0-or-later gives
+  this app a clean copyleft-compatible distribution path while keeping
+  Apache-2.0 available for downstream non-GPL embeddings. License files
+  reorganized: `LICENSE-APACHE.txt` (existing Apache text, moved from
+  `LICENSE`), `LICENSE-GPL.txt` (new, GNU GPL v2 text), `LICENSE` (new
+  dual-declaration). SPDX headers updated across `.py` source files and
+  `pyproject.toml`. `setup.py` `license=` field switched to the dual SPDX
+  expression and a `GPLv2+` classifier added. `license.txt` (Frappe's
+  preferred name) rewritten to reflect the dual license. Brings this app
+  in line with the rest of the OpenSalesTax connector portfolio's
+  dual-licensing standard.
+
+### Added
+
+- **`.github/dependabot.yml`** — weekly checks for pip + GitHub Actions
+  dependencies, with grouped dev-dep PRs. Brings this repo in line with
+  the rest of the OpenSalesTax connector portfolio's supply-chain hygiene
+  standard.
+
 ## [0.1.0] — 2026-05-13
 
 ### Added — v0.1 initial release

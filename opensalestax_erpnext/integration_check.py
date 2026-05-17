@@ -1,11 +1,11 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """Live integration check.
 
 Invoked from a bench console session via:
 
     bench --site <site> execute opensalestax_erpnext.integration_check.run
 
-Not a unit test — exercises the full end-to-end path against a live
+Not a unit test â€” exercises the full end-to-end path against a live
 OpenSalesTax engine. Used for manual / on-VM verification only.
 """
 
@@ -27,7 +27,7 @@ def _find_account(filters: dict, fallback_filters: dict | None = None) -> str | 
 
 
 def run() -> None:
-	# Console-mode locale fix — num2words needs frappe.local.lang
+	# Console-mode locale fix â€” num2words needs frappe.local.lang
 	frappe.local.lang = "en"
 
 	results: dict = {}
@@ -116,7 +116,7 @@ def run() -> None:
 		item.insert(ignore_permissions=True)
 	results["item_exists"] = True
 
-	# 6. US/USD Sales Invoice — hook should fire
+	# 6. US/USD Sales Invoice â€” hook should fire
 	income_acc = _find_account(
 		{"account_type": "Income Account", "is_group": 0, "company": co},
 		{"root_type": "Income", "is_group": 0, "company": co},
@@ -148,7 +148,7 @@ def run() -> None:
 	]
 	results["si_total_tax"] = sum(float(t.tax_amount or 0) for t in si.taxes)
 
-	# 7. Non-USD invoice — hook should no-op
+	# 7. Non-USD invoice â€” hook should no-op
 	si2 = frappe.get_doc(
 		{
 			"doctype": "Sales Invoice",
