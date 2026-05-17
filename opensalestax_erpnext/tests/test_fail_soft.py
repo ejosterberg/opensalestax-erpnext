@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """Fail-soft / fail-strict tests for engine errors."""
 
 from __future__ import annotations
@@ -46,11 +46,11 @@ class TestFailSoft(TestCase):
 		self.assertIn("engine", str(ctx.exception).lower())
 
 	def test_config_error_with_fail_soft_no_ops(self):
-		"""Missing base_url in build_client → OstaxConfigError → soft no-op."""
+		"""Missing base_url in build_client â†’ OstaxConfigError â†’ soft no-op."""
 		settings = _make_settings(fail_soft=1, base_url="")
 		_install_frappe_stub(settings, address_map={"addr1": _make_address()})
 		tax = _import_tax_fresh()
 		doc = _DocWrapper(_make_doc())
-		# Should NOT raise — config error caught by fail_soft path
+		# Should NOT raise â€” config error caught by fail_soft path
 		tax.apply_opensalestax(doc)
 		self.assertEqual(doc.taxes, [])

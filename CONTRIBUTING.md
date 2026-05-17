@@ -6,7 +6,7 @@ Thanks for your interest! Contributions are welcome via pull request.
 
 1. **Every commit must be DCO-signed off** — `git commit -s`. The signature certifies that you wrote the code (or have the right to contribute it) per the [Developer Certificate of Origin](https://developercertificate.org/). CI rejects unsigned commits.
 2. **No AI-generated commit trailers.** Don't include `Co-authored-by: Claude` or similar attributions. The DCO sign-off is enough.
-3. **Apache 2.0** — all contributions are licensed Apache 2.0. SPDX header on every new source file: `# SPDX-License-Identifier: Apache-2.0`.
+3. **Dual-licensed Apache-2.0 OR GPL-2.0-or-later** — all contributions are dual-licensed under your choice of Apache-2.0 or GPL-2.0-or-later. SPDX header on every new source file: `# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later`.
 4. **One concern per PR.** Don't bundle "fix tax-rounding bug + new feature + lint cleanup" — keep them separate.
 
 ## Development setup

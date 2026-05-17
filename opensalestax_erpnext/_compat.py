@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """Cross-version compatibility shims for Frappe v15 and v16.
 
 Isolates the few API differences between branches so the rest of the

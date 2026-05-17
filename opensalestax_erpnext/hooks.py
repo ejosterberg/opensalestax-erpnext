@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """Frappe app hooks for opensalestax_erpnext.
 
 Registers doc_events for Sales Invoice / Sales Order / Quotation
@@ -34,5 +34,5 @@ doc_events = {
 	},
 }
 
-# Install hook — creates default Settings row
+# Install hook â€” creates default Settings row
 after_install = "opensalestax_erpnext.install.after_install"

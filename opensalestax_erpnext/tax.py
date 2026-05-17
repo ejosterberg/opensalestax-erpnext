@@ -1,7 +1,7 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """OpenSalesTax tax-computation hook.
 
-Entry point: `apply_opensalestax(doc, method=None)` — registered as a
+Entry point: `apply_opensalestax(doc, method=None)` â€” registered as a
 `doc_events: validate` handler in `hooks.py` for Sales Invoice, Sales
 Order, and Quotation.
 
@@ -36,17 +36,17 @@ def apply_opensalestax(doc: Any, _method: str | None = None) -> None:
 	"""Replace `doc.taxes` with OpenSalesTax-computed per-jurisdiction lines.
 
 	Registered for `validate` events on Sales Invoice, Sales Order, and
-	Quotation. When the gate checks fail, this is a silent no-op — the
+	Quotation. When the gate checks fail, this is a silent no-op â€” the
 	user's existing tax template applies normally.
 
 	The `_method` argument is positional-required by Frappe's hook
-	dispatcher but unused — we already know the event from the registration.
+	dispatcher but unused â€” we already know the event from the registration.
 	"""
 	try:
 		settings = _settings()
 	except Exception:
-		# Settings doctype not yet installed — defensive guard during the
-		# install→test gap. No-op.
+		# Settings doctype not yet installed â€” defensive guard during the
+		# installâ†’test gap. No-op.
 		return
 
 	if not _should_apply(doc, settings):
@@ -66,15 +66,15 @@ def apply_opensalestax(doc: Any, _method: str | None = None) -> None:
 		if bool(getattr(settings, "fail_soft", 1)):
 			_log_engine_error(doc, e)
 			return
-		frappe.throw(_("OpenSalesTax: tax computation failed — {0}").format(str(e)))
+		frappe.throw(_("OpenSalesTax: tax computation failed â€” {0}").format(str(e)))
 	except Exception as e:
 		if bool(getattr(settings, "fail_soft", 1)):
 			_log_engine_error(doc, e)
 			return
-		frappe.throw(_("OpenSalesTax: engine call failed — {0}").format(str(e)))
+		frappe.throw(_("OpenSalesTax: engine call failed â€” {0}").format(str(e)))
 
 	if not result or not result.get("jurisdictions"):
-		# Engine returned no taxable jurisdictions — leave doc.taxes alone
+		# Engine returned no taxable jurisdictions â€” leave doc.taxes alone
 		return
 
 	_replace_tax_lines(doc, result, settings)
@@ -107,7 +107,7 @@ def _should_apply(doc: Any, settings: Any) -> bool:
 def _resolve_shipping_address(doc: Any) -> Any:
 	"""Pick the best Address record for the ship-to side of `doc`.
 
-	Order of preference: `shipping_address_name` → `customer_address`.
+	Order of preference: `shipping_address_name` â†’ `customer_address`.
 	Returns None if no Address is linked.
 	"""
 	addr_name = doc.get("shipping_address_name") or doc.get("customer_address")
@@ -151,7 +151,7 @@ def _collect_taxable_items(doc: Any, settings: Any) -> tuple[float, list[Any]]:
 
 	for item in doc.get("items") or []:
 		if respect_override and (item.get("item_tax_template") or "").strip():
-			# Merchant has marked this item as having override rates — leave it alone
+			# Merchant has marked this item as having override rates â€” leave it alone
 			continue
 		amount = item.get("amount")
 		if amount is None:
@@ -172,7 +172,7 @@ def _collect_taxable_items(doc: Any, settings: Any) -> tuple[float, list[Any]]:
 def _fetch_rate(zip5: str, taxable_total: float, settings: Any) -> dict[str, Any]:
 	"""Return the engine's calculate response for `zip5` and `taxable_total`.
 
-	Cache first (keyed on ZIP only — rates don't depend on amount).
+	Cache first (keyed on ZIP only â€” rates don't depend on amount).
 	On miss, builds a client and calls the engine's calculate endpoint.
 
 	The cached entry contains a normalized response of the form::
@@ -224,8 +224,8 @@ def _normalize_response(raw: Any) -> dict[str, Any]:
 
 	The engine returns per-line breakdowns, each carrying a list of
 	jurisdictions. For v0.1 we send a single aggregate LineItem, so the
-	response has exactly one line — we extract its jurisdictions.
-	Resilient to slight schema drift — missing fields default to empty/zero.
+	response has exactly one line â€” we extract its jurisdictions.
+	Resilient to slight schema drift â€” missing fields default to empty/zero.
 	"""
 	jurisdictions: list[dict[str, str]] = []
 
@@ -311,7 +311,7 @@ def _replace_tax_lines(doc: Any, result: dict[str, Any], settings: Any) -> None:
 		if kind:
 			label_parts.append(kind.title())
 		label_parts.append(name)
-		description = " — ".join(filter(None, [label_parts[0], " ".join(label_parts[1:])]))
+		description = " â€” ".join(filter(None, [label_parts[0], " ".join(label_parts[1:])]))
 
 		row = {
 			"charge_type": "Actual",
@@ -345,7 +345,7 @@ def _dig(obj: Any, key: str) -> Any:
 
 
 def _safe_iter(obj: Any) -> Any:
-	"""Iterate over `obj` even if it's None — yields nothing in that case."""
+	"""Iterate over `obj` even if it's None â€” yields nothing in that case."""
 	if obj is None:
 		return iter(())
 	try:
@@ -362,5 +362,5 @@ def _log_engine_error(doc: Any, error: Exception) -> None:
 	message = f"doc={doctype}/{name}: {type(error).__name__}: {error}"
 	try:
 		frappe.log_error(message=message, title=title)
-	except Exception:  # noqa: S110 — never let logging failure mask the original error
+	except Exception:  # noqa: S110 â€” never let logging failure mask the original error
 		pass

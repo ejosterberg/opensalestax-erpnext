@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: Apache-2.0
-"""App install hook — creates default OpenSalesTax Settings row."""
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+"""App install hook â€” creates default OpenSalesTax Settings row."""
 
 from __future__ import annotations
 
