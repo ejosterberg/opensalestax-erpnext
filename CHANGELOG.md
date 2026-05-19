@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-05-19
+
+### Changed
+
+- **CP-9: bumped `opensalestax` requirement from `>=0.2.0,<0.3.0` to
+  `>=0.3.0,<0.4.0`.** Picks up the SDK's new `shipping` kwarg on
+  `client.calculate()` plus the `CalculationResult.shipping` and
+  `coverage_warning` response fields, and the `Shipping` /
+  `CalculatedShipping` pydantic models.
+
+### Notes
+
+- ERPNext's current flow sends a single `taxable_total` to the engine
+  (no per-line breakdown) and computes per-jurisdiction tax at
+  apply-time. The first-class shipping field is not yet wired in —
+  surfacing it cleanly requires (1) separating shipping from item
+  taxables (ERPNext stores shipping in the `taxes` table mixed with
+  actual tax lines, distinguished by `account_head`), then (2)
+  passing the shipping amount through `_call_engine()` as the new
+  `shipping` kwarg, and (3) splitting the engine's return into
+  item-tax vs. shipping-tax adjustments. This refactor is deferred
+  to v0.3.x. Today, merchants who include shipping inside the
+  `taxable_total` get it taxed at the same rate as items — which
+  matches ERPNext's standard "shipping is taxed like items" default
+  for most US states. The per-state shipping-taxability nuances
+  (MN tax-iff-taxable-items, MO/VA separately-stated, MD
+  shipping-vs-handling) aren't yet reflected.
+- Engine v0.59.0+ recommended.
+
 ## [0.2.3] — 2026-05-19
 
 ### Fixed
