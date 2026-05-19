@@ -18,6 +18,8 @@
   "column_break_behavior",
   "tax_account_head",
   "shipping_account_head",
+  "section_break_nexus",
+  "nexus_states",
   "section_break_advanced",
   "treat_item_tax_template_as_override",
   "allow_private_networks",
@@ -96,6 +98,17 @@
    "fieldtype": "Link",
    "label": "Shipping Income Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "section_break_nexus",
+   "fieldtype": "Section Break",
+   "label": "Per-State Nexus Filter"
+  },
+  {
+   "description": "Comma-separated list of US 2-letter state codes (e.g. \"MN,WI,IA\") the merchant has nexus in. When set, the engine is only called for invoices whose ship-to state is in this list — for any other state, ERPNext's default tax behavior takes over (typically: no tax). Leave blank to call the engine for every US/USD invoice (pre-v0.2 behavior). Missing or unresolvable destination state with the filter active is fail-closed.",
+   "fieldname": "nexus_states",
+   "fieldtype": "Small Text",
+   "label": "Nexus States (comma-separated)"
   },
   {
    "collapsible": 1,

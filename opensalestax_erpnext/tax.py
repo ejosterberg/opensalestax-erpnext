@@ -56,6 +56,13 @@ def apply_opensalestax(doc: Any, _method: str | None = None) -> None:
 	if not zip5:
 		return
 
+	# Per-state nexus filter (CP-3, v0.2.0). When the merchant has set
+	# `nexus_states`, short-circuit the engine call for any invoice whose
+	# ship-to state is not in the allowlist. Unresolvable state with the
+	# filter active is fail-closed.
+	if _should_skip_for_nexus(doc, settings):
+		return
+
 	taxable_total, _items = _collect_taxable_items(doc, settings)
 	if taxable_total <= 0:
 		return
@@ -117,6 +124,76 @@ def _resolve_shipping_address(doc: Any) -> Any:
 		return frappe.get_cached_doc("Address", addr_name)
 	except frappe.DoesNotExistError:
 		return None
+
+
+# Per-state nexus filter (CP-3, v0.2.0)
+
+# Full 50-state name → 2-letter code lookup. ERPNext's Address.state field is
+# free text — merchants typically type the full state name on US addresses.
+# Keys are uppercase so we can do a single-pass case-insensitive lookup.
+_STATE_NAME_TO_CODE = {
+	"ALABAMA": "AL", "ALASKA": "AK", "ARIZONA": "AZ", "ARKANSAS": "AR",
+	"CALIFORNIA": "CA", "COLORADO": "CO", "CONNECTICUT": "CT", "DELAWARE": "DE",
+	"DISTRICT OF COLUMBIA": "DC", "FLORIDA": "FL", "GEORGIA": "GA", "HAWAII": "HI",
+	"IDAHO": "ID", "ILLINOIS": "IL", "INDIANA": "IN", "IOWA": "IA",
+	"KANSAS": "KS", "KENTUCKY": "KY", "LOUISIANA": "LA", "MAINE": "ME",
+	"MARYLAND": "MD", "MASSACHUSETTS": "MA", "MICHIGAN": "MI", "MINNESOTA": "MN",
+	"MISSISSIPPI": "MS", "MISSOURI": "MO", "MONTANA": "MT", "NEBRASKA": "NE",
+	"NEVADA": "NV", "NEW HAMPSHIRE": "NH", "NEW JERSEY": "NJ", "NEW MEXICO": "NM",
+	"NEW YORK": "NY", "NORTH CAROLINA": "NC", "NORTH DAKOTA": "ND", "OHIO": "OH",
+	"OKLAHOMA": "OK", "OREGON": "OR", "PENNSYLVANIA": "PA", "RHODE ISLAND": "RI",
+	"SOUTH CAROLINA": "SC", "SOUTH DAKOTA": "SD", "TENNESSEE": "TN", "TEXAS": "TX",
+	"UTAH": "UT", "VERMONT": "VT", "VIRGINIA": "VA", "WASHINGTON": "WA",
+	"WEST VIRGINIA": "WV", "WISCONSIN": "WI", "WYOMING": "WY",
+}
+
+
+def _parse_nexus_states(raw: str) -> list[str]:
+	"""Parse the merchant's `nexus_states` setting into a deduped list of
+	upper-case 2-letter state codes. Accepts comma- or whitespace-separated
+	input. Anything that isn't a 2-letter US code drops silently.
+	"""
+	if not raw:
+		return []
+	import re
+	out: list[str] = []
+	for tok in re.split(r"[\s,]+", raw.upper()):
+		if re.match(r"^[A-Z]{2}$", tok) and tok not in out:
+			out.append(tok)
+	return out
+
+
+def _extract_state(doc: Any) -> str | None:
+	"""Best-effort 2-letter US state code from the doc's shipping address.
+
+	ERPNext's Address.state is free text. We accept the 2-letter form
+	directly, and normalize the 50 full state names to their codes.
+	Returns None if the state is missing or unrecognizable.
+	"""
+	address = _resolve_shipping_address(doc)
+	if not address:
+		return None
+	raw = (address.get("state") or "").strip()
+	if not raw:
+		return None
+	upper = raw.upper()
+	if len(upper) == 2 and upper.isalpha():
+		return upper
+	return _STATE_NAME_TO_CODE.get(upper)
+
+
+def _should_skip_for_nexus(doc: Any, settings: Any) -> bool:
+	"""Returns True when the per-state nexus filter is enabled AND the
+	destination state is NOT in the allowlist (or is unresolvable).
+	"""
+	raw = getattr(settings, "nexus_states", None) or ""
+	allowlist = _parse_nexus_states(str(raw))
+	if not allowlist:
+		return False  # filter disabled
+	state = _extract_state(doc)
+	if state is None:
+		return True  # fail-closed when filter is on
+	return state not in allowlist
 
 
 def _extract_zip(doc: Any) -> str | None:
