@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-05-19
+
+### Changed
+
+- **CP-8 Phase 5D: bumped `opensalestax` constraint to `>=0.2.0,<0.3.0`.**
+  Picks up the new `OpenSalesTaxClient.capabilities()` /
+  `OpenSalesTaxClient.get_capabilities()` helpers for engine v0.59.0's
+  `/v1/capabilities` endpoint. No merchant-visible behavior change in
+  this release — the helper is available to connector code but not yet
+  wired into any feature path. Constraint bump only; Test Connection
+  surface enrichment deferred to v-next.
+
 ## [0.2.0] — 2026-05-19
 
 ### Added
