@@ -246,9 +246,7 @@ class TestNexusFilter(TestCase):
 		)
 
 	def test_extract_state_two_letter_code(self):
-		_install_frappe_stub(
-			_make_settings(), address_map={"addr1": _make_address_with_state("MN")}
-		)
+		_install_frappe_stub(_make_settings(), address_map={"addr1": _make_address_with_state("MN")})
 		tax = _import_tax_fresh()
 		doc = _DocWrapper(_make_doc())
 		self.assertEqual(tax._extract_state(doc), "MN")
@@ -263,9 +261,7 @@ class TestNexusFilter(TestCase):
 		self.assertEqual(tax._extract_state(doc), "MN")
 
 	def test_extract_state_lowercase_normalized(self):
-		_install_frappe_stub(
-			_make_settings(), address_map={"addr1": _make_address_with_state("mn")}
-		)
+		_install_frappe_stub(_make_settings(), address_map={"addr1": _make_address_with_state("mn")})
 		tax = _import_tax_fresh()
 		doc = _DocWrapper(_make_doc())
 		self.assertEqual(tax._extract_state(doc), "MN")
@@ -278,27 +274,21 @@ class TestNexusFilter(TestCase):
 
 	def test_filter_disabled_when_nexus_states_empty(self):
 		settings = _make_settings(nexus_states="")
-		_install_frappe_stub(
-			settings, address_map={"addr1": _make_address_with_state("MN")}
-		)
+		_install_frappe_stub(settings, address_map={"addr1": _make_address_with_state("MN")})
 		tax = _import_tax_fresh()
 		doc = _DocWrapper(_make_doc())
 		self.assertFalse(tax._should_skip_for_nexus(doc, settings))
 
 	def test_filter_allows_listed_state(self):
 		settings = _make_settings(nexus_states="MN,WI,IA")
-		_install_frappe_stub(
-			settings, address_map={"addr1": _make_address_with_state("MN")}
-		)
+		_install_frappe_stub(settings, address_map={"addr1": _make_address_with_state("MN")})
 		tax = _import_tax_fresh()
 		doc = _DocWrapper(_make_doc())
 		self.assertFalse(tax._should_skip_for_nexus(doc, settings))
 
 	def test_filter_blocks_out_of_state(self):
 		settings = _make_settings(nexus_states="MN,WI,IA")
-		_install_frappe_stub(
-			settings, address_map={"addr1": _make_address_with_state("CA")}
-		)
+		_install_frappe_stub(settings, address_map={"addr1": _make_address_with_state("CA")})
 		tax = _import_tax_fresh()
 		doc = _DocWrapper(_make_doc())
 		self.assertTrue(tax._should_skip_for_nexus(doc, settings))
@@ -312,9 +302,7 @@ class TestNexusFilter(TestCase):
 
 	def test_apply_short_circuits_out_of_state(self):
 		settings = _make_settings(nexus_states="MN,WI,IA")
-		_install_frappe_stub(
-			settings, address_map={"addr1": _make_address_with_state("CA")}
-		)
+		_install_frappe_stub(settings, address_map={"addr1": _make_address_with_state("CA")})
 		tax = _import_tax_fresh()
 		# Stub _fetch_rate to fail loudly if called — it shouldn't be.
 		tax._fetch_rate = lambda *a, **kw: (_ for _ in ()).throw(AssertionError("engine called"))
