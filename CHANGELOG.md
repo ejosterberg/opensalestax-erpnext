@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] — 2026-05-19
+
+### Fixed
+
+- **`ruff format --check` red on `tax.py` + `tests/test_gates.py`.**
+  Pre-existing formatter drift that v0.2.2 didn't catch because
+  `ruff check` (linter) and `ruff format --check` (formatter) are
+  separate jobs in CI. Once v0.2.2 made `ruff check` pass, the
+  formatter check ran and flagged the drift. `ruff format` auto-fix
+  applied: 58 lines reflowed across 2 files. Behavior unchanged;
+  51/51 pytest tests still pass.
+
 ## [0.2.2] — 2026-05-19
 
 ### Fixed
