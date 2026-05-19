@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-05-19
+
+### Added
+
+- **Per-state nexus filter (CP-3).** New `Nexus States (comma-separated)`
+  field in the OpenSalesTax Settings DocType accepts a comma-separated
+  list of US 2-letter state codes (e.g. `MN,WI,IA`). When set and
+  non-empty, the validate hook short-circuits the engine call for any
+  Sales Invoice / Sales Order / Quotation whose ship-to state is not
+  in the list — ERPNext's default tax behavior (typically: no tax)
+  takes over. Unset / empty preserves v0.1 behavior (engine called
+  for every US/USD doc). Missing / unresolvable destination state
+  with the filter active is fail-closed (also short-circuit) — the
+  safer default for a merchant who explicitly opted in.
+
+  Address parsing: ERPNext's `Address.state` is free text. We accept
+  the 2-letter form directly and normalize the 50 full state names
+  ("Minnesota" → "MN") at the read site. Anything that doesn't
+  resolve to a 2-letter US code yields null (fail-closed).
+
+  The new field is shipped in the DocType JSON, so existing installs
+  pick it up automatically on `bench migrate` (Frappe syncs DocType
+  field additions from the JSON — no separate patch needed).
+
+  Brings this connector in line with WooCommerce v0.5, Vendure v1.2,
+  and Odoo v0.3, which already shipped this filter. Major win for
+  merchants with limited nexus footprints — typical merchant only
+  has 1–3 nexus states and was previously paying engine RTT on
+  every invoice.
+
 ## [0.1.1] — 2026-05-17
 
 ### Changed

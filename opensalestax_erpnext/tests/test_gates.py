@@ -208,3 +208,116 @@ class TestGates(TestCase):
 		doc = _DocWrapper(_make_doc())
 		# With enabled=0 we no-op anyway; check the helper directly:
 		self.assertEqual(tax._extract_zip(doc), "55401")
+
+
+# --- CP-3 per-state nexus filter (v0.2.0) -----------------------------------
+
+
+def _make_address_with_state(state, country="United States", pincode="55401"):
+	return {"country": country, "pincode": pincode, "state": state}
+
+
+class TestNexusFilter(TestCase):
+	def test_parse_nexus_states_empty(self):
+		_install_frappe_stub(_make_settings())
+		tax = _import_tax_fresh()
+		self.assertEqual(tax._parse_nexus_states(""), [])
+		self.assertEqual(tax._parse_nexus_states("   "), [])
+
+	def test_parse_nexus_states_comma_separated(self):
+		_install_frappe_stub(_make_settings())
+		tax = _import_tax_fresh()
+		self.assertEqual(tax._parse_nexus_states("MN,WI,IA"), ["MN", "WI", "IA"])
+
+	def test_parse_nexus_states_normalizes_and_dedupes(self):
+		_install_frappe_stub(_make_settings())
+		tax = _import_tax_fresh()
+		self.assertEqual(
+			tax._parse_nexus_states("mn, wi, MN, ia, wi"),
+			["MN", "WI", "IA"],
+		)
+
+	def test_parse_nexus_states_drops_malformed(self):
+		_install_frappe_stub(_make_settings())
+		tax = _import_tax_fresh()
+		self.assertEqual(
+			tax._parse_nexus_states("MN, Minnesota, 12, ,WI"),
+			["MN", "WI"],
+		)
+
+	def test_extract_state_two_letter_code(self):
+		_install_frappe_stub(
+			_make_settings(), address_map={"addr1": _make_address_with_state("MN")}
+		)
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertEqual(tax._extract_state(doc), "MN")
+
+	def test_extract_state_full_name_normalized(self):
+		_install_frappe_stub(
+			_make_settings(),
+			address_map={"addr1": _make_address_with_state("Minnesota")},
+		)
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertEqual(tax._extract_state(doc), "MN")
+
+	def test_extract_state_lowercase_normalized(self):
+		_install_frappe_stub(
+			_make_settings(), address_map={"addr1": _make_address_with_state("mn")}
+		)
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertEqual(tax._extract_state(doc), "MN")
+
+	def test_extract_state_returns_none_when_missing(self):
+		_install_frappe_stub(_make_settings(), address_map={"addr1": _make_address()})
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertIsNone(tax._extract_state(doc))
+
+	def test_filter_disabled_when_nexus_states_empty(self):
+		settings = _make_settings(nexus_states="")
+		_install_frappe_stub(
+			settings, address_map={"addr1": _make_address_with_state("MN")}
+		)
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertFalse(tax._should_skip_for_nexus(doc, settings))
+
+	def test_filter_allows_listed_state(self):
+		settings = _make_settings(nexus_states="MN,WI,IA")
+		_install_frappe_stub(
+			settings, address_map={"addr1": _make_address_with_state("MN")}
+		)
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertFalse(tax._should_skip_for_nexus(doc, settings))
+
+	def test_filter_blocks_out_of_state(self):
+		settings = _make_settings(nexus_states="MN,WI,IA")
+		_install_frappe_stub(
+			settings, address_map={"addr1": _make_address_with_state("CA")}
+		)
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertTrue(tax._should_skip_for_nexus(doc, settings))
+
+	def test_filter_fails_closed_on_unresolvable_state(self):
+		settings = _make_settings(nexus_states="MN,WI,IA")
+		_install_frappe_stub(settings, address_map={"addr1": _make_address()})  # no state
+		tax = _import_tax_fresh()
+		doc = _DocWrapper(_make_doc())
+		self.assertTrue(tax._should_skip_for_nexus(doc, settings))
+
+	def test_apply_short_circuits_out_of_state(self):
+		settings = _make_settings(nexus_states="MN,WI,IA")
+		_install_frappe_stub(
+			settings, address_map={"addr1": _make_address_with_state("CA")}
+		)
+		tax = _import_tax_fresh()
+		# Stub _fetch_rate to fail loudly if called — it shouldn't be.
+		tax._fetch_rate = lambda *a, **kw: (_ for _ in ()).throw(AssertionError("engine called"))
+		doc = _DocWrapper(_make_doc())
+		tax.apply_opensalestax(doc)  # must not raise
+		self.assertEqual(doc.taxes, [])

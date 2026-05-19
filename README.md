@@ -85,6 +85,30 @@ When any gate fails, the hook silently no-ops and ERPNext's normal template-base
 | Item has `item_tax_template` set | Item excluded from OST compute (respects merchant override). Toggleable via Settings. |
 | Engine unreachable + `fail_soft = 1` | Silent fallback to user's template. Error logged. |
 | Engine unreachable + `fail_soft = 0` | Save throws with a clear error message. |
+| `nexus_states` set AND ship-to state NOT in list | Hook no-ops; ERPNext's default tax (typically: no tax) applies. v0.2 (CP-3). |
+| `nexus_states` set AND ship-to state missing/unresolvable | Hook no-ops (fail-closed). v0.2 (CP-3). |
+
+### Per-state nexus filter (CP-3, v0.2.0)
+
+Most US merchants only collect sales tax in a small set of states. Without
+a filter, every invoice goes to the engine even when the merchant has
+no collection obligation for the destination.
+
+In **OpenSalesTax Settings → Per-State Nexus Filter**, set
+`Nexus States (comma-separated)` to e.g. `MN,WI,IA` to restrict engine
+round-trips to invoices shipping to those states. Carts to any other
+state short-circuit to ERPNext's default tax behavior (no tax line).
+
+Leave blank to call the engine for every US/USD invoice (pre-v0.2
+behavior — fully backward compatible).
+
+ERPNext stores `Address.state` as free text; we accept the 2-letter
+form (`MN`) directly and normalize the 50 full state names
+(`Minnesota` → `MN`). Anything that doesn't resolve to a 2-letter US
+code with the filter active is fail-closed (no engine call).
+
+Brings this connector in line with WooCommerce v0.5, Vendure v1.2,
+and Odoo v0.3, which already shipped this filter.
 
 ## Caveats
 
