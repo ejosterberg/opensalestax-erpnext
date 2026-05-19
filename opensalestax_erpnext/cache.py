@@ -5,7 +5,7 @@ Backed by Frappe's `frappe.cache()` which provides a configured Redis
 client. Cache key is `ostax:rate:<zip5>`; values are JSON-serialized
 engine responses.
 
-Cache miss is graceful â€” a corrupt or unreadable cache entry is
+Cache miss is graceful -- a corrupt or unreadable cache entry is
 treated as a miss and the engine call is made fresh.
 """
 
@@ -34,7 +34,7 @@ def get(zip5: str) -> dict[str, Any] | None:
 	try:
 		return json.loads(raw)
 	except (TypeError, ValueError):
-		# JSONDecodeError is a ValueError subclass â€” caught above.
+		# JSONDecodeError is a ValueError subclass -- caught above.
 		return None
 
 

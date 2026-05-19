@@ -25,7 +25,7 @@ class OpenSalesTaxSettings(Document):
 	def validate(self) -> None:
 		"""Reject save when configuration is inconsistent.
 
-		Only enforces URL validation when the app is being enabled â€” that
+		Only enforces URL validation when the app is being enabled -- that
 		way an admin can save a draft URL while it's still wrong without
 		being blocked.
 		"""

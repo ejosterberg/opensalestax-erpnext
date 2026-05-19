@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-05-19
+
+### Fixed
+
+- **CI red since v0.2.0: ruff RUF002 + RUF003 ambiguous-Unicode errors.**
+  Several Python files contained mojibake byte sequences inside
+  comments and docstrings -- visual `->` and `--` characters that had
+  been encoded as 3-byte sequences (U+00E2 U+2020 U+2019 and
+  U+00E2 U+20AC U+201D respectively) by a Latin-1 -> UTF-8 conversion
+  somewhere in the file's history. ruff correctly flagged these as
+  ambiguous Unicode (RUF002 in docstrings, RUF003 in comments).
+  v0.2.2 replaces both 3-char mojibake sequences with their ASCII
+  equivalents (`->` and `--`) across all `.py` files. 48 characters
+  swapped across 15 files. No behavior change; CI green again.
+- 51/51 pytest tests still pass.
+
 ## [0.2.1] — 2026-05-19
 
 ### Changed

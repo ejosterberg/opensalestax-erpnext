@@ -57,7 +57,7 @@ class TestItemTaxTemplatePrecedence(TestCase):
 		self.assertEqual(len(taxable), 2)
 
 	def test_no_taxable_items_no_op(self):
-		"""All items have item_tax_template â†’ no engine call, no tax lines."""
+		"""All items have item_tax_template -> no engine call, no tax lines."""
 		items = [
 			{"item_code": "EXEMPT1", "qty": 1, "rate": 100, "amount": 100, "item_tax_template": "Exempt"},
 			{"item_code": "EXEMPT2", "qty": 1, "rate": 50, "amount": 50, "item_tax_template": "Exempt"},
@@ -69,5 +69,5 @@ class TestItemTaxTemplatePrecedence(TestCase):
 		_patch_client_factory(tax)
 		doc = _DocWrapper(_make_doc(items=items))
 		tax.apply_opensalestax(doc)
-		# No OST lines appended â€” every item carried an override
+		# No OST lines appended -- every item carried an override
 		self.assertEqual(doc.taxes, [])
