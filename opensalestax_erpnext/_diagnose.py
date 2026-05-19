@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
-"""Diagnostic helper â€” survey the site state on a fresh ERPNext install."""
+"""Diagnostic helper -- survey the site state on a fresh ERPNext install."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ def run() -> None:
 	co_list = frappe.get_all("Company", fields=["name", "default_currency", "country", "abbr"])
 	print(f"Companies: {co_list}")
 	if not co_list:
-		print("No companies â€” site setup not completed. ERPNext needs a company before tax accounts exist.")
+		print("No companies -- site setup not completed. ERPNext needs a company before tax accounts exist.")
 		return
 	co = co_list[0]["name"]
 

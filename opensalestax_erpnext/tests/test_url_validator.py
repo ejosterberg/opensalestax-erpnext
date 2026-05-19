@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 """SSRF defense unit tests.
 
-These tests do not require a Frappe bench â€” they're pure-Python and
+These tests do not require a Frappe bench -- they're pure-Python and
 can run via plain `pytest`. Run via `bench run-tests` too via the
 FrappeTestCase shim, but the actual logic doesn't touch Frappe.
 """

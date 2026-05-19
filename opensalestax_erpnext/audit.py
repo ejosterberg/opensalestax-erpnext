@@ -14,7 +14,7 @@ def record_submission(_doc: Any, _method: str | None = None) -> None:
 	"""Hook for Sales Invoice on_submit. v0.2 will post to engine.
 
 	Args are positional-required by Frappe's hook dispatcher but unused
-	in v0.1 â€” the engine has no `/v1/transactions` endpoint yet.
+	in v0.1 -- the engine has no `/v1/transactions` endpoint yet.
 	"""
 	return None
 

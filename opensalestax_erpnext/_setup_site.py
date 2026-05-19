@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
-"""One-shot site bootstrap â€” completes ERPNext setup wizard for integration tests."""
+"""One-shot site bootstrap -- completes ERPNext setup wizard for integration tests."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ def run() -> None:
 	"""Run ERPNext's setup_complete wizard with minimal test args.
 
 	The admin password is read from the OSTAX_TEST_ADMIN_PASSWORD env var
-	(no hardcoded credential â€” keeps SonarQube + secret scanners happy).
+	(no hardcoded credential -- keeps SonarQube + secret scanners happy).
 	"""
 	import os
 
@@ -40,6 +40,6 @@ def run() -> None:
 	)
 	setup_complete(args)
 	frappe.db.commit()
-	print("Setup complete â€” Test OST Co created.")
+	print("Setup complete -- Test OST Co created.")
 	co = frappe.db.get_value("Company", {"name": "Test OST Co"}, "name")
 	print(f"Company: {co}")

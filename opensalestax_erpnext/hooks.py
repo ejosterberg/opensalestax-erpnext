@@ -34,5 +34,5 @@ doc_events = {
 	},
 }
 
-# Install hook â€” creates default Settings row
+# Install hook -- creates default Settings row
 after_install = "opensalestax_erpnext.install.after_install"

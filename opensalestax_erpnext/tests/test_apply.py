@@ -97,7 +97,7 @@ class TestApply(TestCase):
 		tax.apply_opensalestax(doc)
 		total = sum(line["tax_amount"] for line in doc.taxes)
 		# Combined rate from fake response: 6.875 + 0.15 + 0.5*4 = 9.025%
-		# $100 * 9.025% = $9.025 â†’ rounded per-line to 0.01 may differ slightly
+		# $100 * 9.025% = $9.025 -> rounded per-line to 0.01 may differ slightly
 		self.assertAlmostEqual(total, 9.03, places=2)
 
 	def test_multi_item_invoice(self):
@@ -108,8 +108,8 @@ class TestApply(TestCase):
 		tax, doc, _settings = self._setup(items=items)
 		tax.apply_opensalestax(doc)
 		total = sum(line["tax_amount"] for line in doc.taxes)
-		# $150 * 9.025% = $13.5375 â†’ rounded per-jurisdiction at 2 decimals
-		# (ROUND_HALF_EVEN) drifts ~$0.01 from the math total. Accept Â±$0.05.
+		# $150 * 9.025% = $13.5375 -> rounded per-jurisdiction at 2 decimals
+		# (ROUND_HALF_EVEN) drifts ~$0.01 from the math total. Accept +/-$0.05.
 		self.assertAlmostEqual(total, 13.54, delta=0.05)
 
 	def test_empty_engine_jurisdictions_leaves_taxes_unchanged(self):
@@ -125,9 +125,9 @@ class TestApply(TestCase):
 
 		try:
 			cache.flush()
-		except Exception:  # noqa: S110 â€” best-effort test-cleanup helper
+		except Exception:  # noqa: S110 -- best-effort test-cleanup helper
 			pass
 		tax.apply_opensalestax(doc)
-		# Engine returned no jurisdictions â€” existing template line preserved
+		# Engine returned no jurisdictions -- existing template line preserved
 		self.assertEqual(len(doc.taxes), 1)
 		self.assertEqual(doc.taxes[0]["description"], "existing")
