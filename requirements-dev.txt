@@ -3,7 +3,7 @@
 
 -r requirements.txt
 
-pytest>=7.0
+pytest>=9.0.3
 pytest-mock>=3.10
 ruff>=0.4
 black>=24.0
